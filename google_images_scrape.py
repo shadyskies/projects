@@ -24,14 +24,17 @@ def get_image_urls(wd:webdriver, max_links, query):
         print(f"Found {num_results} search result. Getting source of {num_results}:..{max_links}")
         
         for img in thumbnail_results:
-            img.click()
-            time.sleep(6)
+            try:
+                img.click()
+            except:
+                pass
+            time.sleep(3) #change according to resolution
             
             actual_images = wd.find_elements_by_css_selector("img.n3VNCb")
             for actual in actual_images:
-                if "http" in actual.get_attribute('src'):
+                if "http" in actual.get_attribute('src') and "encrypted" not in actual.get_attribute('src'):
                     image_urls.append(actual.get_attribute('src'))
-                    print(actual.get_attribute('src'))
+                    print(f"{count+1}:{actual.get_attribute('src')}")
 
                 count = len(image_urls)
                 if count >= max_links:
@@ -49,7 +52,7 @@ def get_image_urls(wd:webdriver, max_links, query):
     return image_urls
 
 
-def persist_image(folder_path:str,file_name:str,url:str):
+def persist_image(folder_path,query, url, count):
     try:
         image_content = requests.get(url).content
 
@@ -59,7 +62,7 @@ def persist_image(folder_path:str,file_name:str,url:str):
     try:
         image_file = io.BytesIO(image_content)
         image = Image.open(image_file).convert('RGB')
-        folder_path = os.path.join(folder_path,file_name)
+        folder_path = os.path.join(folder_path, query)
         if os.path.exists(folder_path):
             file_path = os.path.join(folder_path,hashlib.sha1(image_content).hexdigest()[:10] + '.jpg')
         else:
@@ -67,7 +70,7 @@ def persist_image(folder_path:str,file_name:str,url:str):
             file_path = os.path.join(folder_path,hashlib.sha1(image_content).hexdigest()[:10] + '.jpg')
         with open(file_path, 'wb') as f:
             image.save(f, "JPEG", quality=85)
-        print(f"SUCCESS - saved {url} - as {file_path}")
+        print(f"{count} :: SUCCESS - saved {url} - as {file_path}")
     except Exception as e:
         print(f"ERROR - Could not save {url} - {e}")
 
@@ -75,10 +78,16 @@ def persist_image(folder_path:str,file_name:str,url:str):
 
 if __name__ == '__main__':
     # wd = webdriver.Chrome(executable_path='/chromedriver')
+    query = input("Enter query to download...")
+    max_links = int(input("Enter number of images to download..."))
     wd = webdriver.Chrome(executable_path="/usr/lib/chromium-browser/chromedriver")
-    query = '4k desktop wallpaper'
-    links = get_image_urls(wd, 2, query)
+    links = get_image_urls(wd, max_links, query)
+    wd.quit()
     if not os.path.exists('pics/'):
         os.makedirs("pics")
+    count = 0
     for img in links:
-        persist_image("pics/", query, img)    
+        count += 1
+        persist_image("pics/", query, img, count)    
+    print(f"Downloaded {len(os.listdir('pics/' + str(query)))} images")
+    wd.quit()
