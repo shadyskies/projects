@@ -2,6 +2,15 @@
 
 import os
 import sys
-import shutil
+from shutil import copy
 
-folders = [Docs, Torrents, Folders, Songs, Pictures]
+
+PATH = "../../../../../Downloads"
+folders = ["Docs","Torrents","Songs","Pictures","ISO's","Packages","Misc"]
+
+print(os.listdir(PATH))
+files = [i for i in os.listdir(PATH) if not os.path.isdir(i)]
+files_extensions = [i.split(".")[-1] for i in os.listdir(PATH) if not os.path.isdir(i)]
+
+print(files)
+print(files_extensions)
