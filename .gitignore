@@ -1,1 +1,5 @@
 pics/
+.env
+.idea
+json_file.json
+tutorial/

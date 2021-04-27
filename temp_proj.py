@@ -1,11 +1,10 @@
-from PIL import Image
-import io
-import hashlib
+#lets see where it goes
 import requests
-import os
+import os 
+from PIL import Image
+import hashlib
+import io
 
-
-# def download_images(folder_path, url, query, count):
 def download_images(url, folder_path):
     try:
         image_content = requests.get(url).content
@@ -27,6 +26,3 @@ def download_images(url, folder_path):
         print(f"SUCCESS - saved {url} - as {file_path}")
     except Exception as e:
         print(f"ERROR - Could not save {url} - {e}")
-
-url = input("Enter url: ")
-download_images(url=url, folder_path="pics1")
