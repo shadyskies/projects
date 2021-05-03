@@ -4,6 +4,7 @@ import pandas as pd #for read_excel: xlrd and openpyxl
 from pandas.api.types import is_numeric_dtype, is_float_dtype
 import numpy as np
 import os
+from sqlalchemy import create_engine 
 
 
 def get_source(file):
@@ -29,6 +30,7 @@ def extract_csv(file):
     for i in range(len(cols)):
         if is_numeric_dtype(df[cols[i]]) or is_float_dtype(df[cols[i]]):
             print(f"{cols[i]}\t {round(df[cols[i]].mean(),3)}\t {round(df[cols[i]].median(),3)}\t {df[cols[i]].isna().sum()}")
+    return df
 
 def extract_xl(file):
     df = pd.read_excel('boston_house.xlsx', sheet_name=0)
@@ -39,7 +41,7 @@ def extract_xl(file):
     for i in range(len(cols)):
         if is_numeric_dtype(df[cols[i]]) or is_float_dtype(df[cols[i]]):
             print(f"{cols[i]}\t {round(df[cols[i]].mean(),3)}\t {round(df[cols[i]].median(),3)}\t {df[cols[i]].isna().sum()}")
-
+    return df
 
 def plots():
     val = input("Enter type of plot: ")
@@ -59,14 +61,15 @@ def get_from_db():
         password="django_projects_pwd",
         database="emp"
     )
-    cursor = mydb.cursor()
-    # table = input("Enter table name: ")
-    table = "EMPLOYEE"
-    query =f"SELECT column_name\
-        FROM information_schema.columns\
-        WHERE table_name = {table}"
-    cursor.execute(query)
-    print(cursor.fetchall()) 
+    db_connection_url = f"mysql://django_projects:django_projects_pwd@localhost/emp"
+    db_connection = create_engine(db_connection_url)
+
+    df = pd.read_sql("SELECT * FROM EMPLOYEE", con=db_connection)
+    print(df.head)
+    #print cols
+    print(df.columns.ravel)
+    return df
+
 
 if __name__ == "__main__":
     val = int(input("Enter 0 to select from database or 1 to select file..."))
